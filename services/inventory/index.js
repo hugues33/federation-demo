@@ -9,6 +9,16 @@ const typeDefs = gql`
     inStock: Boolean
     shippingEstimate: Int @requires(fields: "price weight")
   }
+
+  extend type UserMetadata {
+    description: String @external
+  }
+
+  extend type User @key(fields: "id") {
+    id: ID! @external
+    metadata: [UserMetadata] @external
+    goodDescription: Boolean @requires(fields: "metadata { description }")
+  }
 `;
 
 const resolvers = {
@@ -25,7 +35,12 @@ const resolvers = {
       // estimate is based on weight
       return object.weight * 0.5;
     }
-  }
+  },
+  User: {
+    goodDescription(object) {
+      return object.metadata[0].description === "2";
+    }
+  },
 };
 
 const server = new ApolloServer({

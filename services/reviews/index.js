@@ -9,10 +9,16 @@ const typeDefs = gql`
     product: Product
   }
 
+  extend type UserMetadata {
+    address: String @external
+  }
+
   extend type User @key(fields: "id") {
     id: ID! @external
     username: String @external
+    metadata: [UserMetadata] @external
     reviews: [Review]
+    goodAddress: Boolean @requires(fields: "metadata { address }")
   }
 
   extend type Product @key(fields: "upc") {
@@ -37,6 +43,9 @@ const resolvers = {
     username(user) {
       const found = usernames.find(username => username.id === user.id);
       return found ? found.username : null;
+    },
+    goodAddress(object) {
+      return object.metadata[0].address === "1";
     }
   },
   Product: {
